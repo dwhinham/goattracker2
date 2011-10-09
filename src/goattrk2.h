@@ -25,6 +25,10 @@
 #include "ginstr.h"
 #include "gtable.h"
 
+#ifdef __MACOSX__
+#include "mac_midi.h"
+#endif
+
 #define EDIT_PATTERN 0
 #define EDIT_ORDERLIST 1
 #define EDIT_INSTRUMENT 2

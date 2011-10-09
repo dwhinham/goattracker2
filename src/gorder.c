@@ -334,8 +334,16 @@ void orderlistcommands(void)
     break;
 
     case KEY_DEL:
-    esmarkchn = -1;
-    deleteorder();
+    if (altpressed)
+    {
+        esmarkchn = -1;
+        insertorder(0);
+    }
+    else
+    {
+        esmarkchn = -1;
+        deleteorder();
+    }          
     break;
 
     case KEY_INS:

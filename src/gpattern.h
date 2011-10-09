@@ -11,6 +11,11 @@ extern int epoctave;
 extern int epmarkchn;
 extern int epmarkstart;
 extern int epmarkend;
+
+#ifdef __MACOSX__
+extern int virtualkeycode;
+#endif
+
 #endif
 
 void patterncommands(void);

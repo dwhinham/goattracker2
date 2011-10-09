@@ -27,6 +27,7 @@ unsigned oldmousepixelx = 0xffffffff;
 unsigned oldmousepixely = 0xffffffff;
 int mouseheld = 0;
 int region[MAX_ROWS];
+int altpressed = 0;
 
 void initicon(void);
 
@@ -47,8 +48,12 @@ int initscreen(void)
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0)
     return 0;
   win_openwindow("GoatTracker", NULL);
+#ifdef __MACOSX__
+  win_setmousemode(MOUSE_ALWAYS_VISIBLE);
+#else
   win_setmousemode(MOUSE_ALWAYS_HIDDEN);
   initicon();
+#endif
 
   if (!gfx_init(MAX_COLUMNS * 8, MAX_ROWS * 16, 60, 0))
   {
@@ -357,7 +362,9 @@ void fliptoscreen(void)
     int ey = (mousepixely + MOUSESIZEY - 1) >> 4;
     if (ey >= MAX_ROWS) ey = MAX_ROWS - 1;
 
+#ifndef __MACOSX__
     gfx_drawsprite(mousepixelx, mousepixely, 0x1);
+#endif
     for (y = sy; y <= ey; y++)
       region[y] = 1;
   }
@@ -372,7 +379,9 @@ void fliptoscreen(void)
   {
     if (region[y])
     {
+#ifndef __MACOSX__
       SDL_UpdateRect(gfx_screen, 0, y*16, MAX_COLUMNS*8, 16);
+#endif
       region[y] = 0;
     }
   }
@@ -415,6 +424,12 @@ void getkey(void)
       (win_keystate[KEY_CTRL])||(win_keystate[KEY_RIGHTCTRL]))
     shiftpressed = 1;
 
+#ifdef __MACOSX__
+    altpressed = 0;
+    if (win_keystate[KEY_ALT] || win_keystate[KEY_RIGHTALT])
+        altpressed = 1;
+#endif
+    
   if (rawkey == SDLK_KP_ENTER)
   {
     key = KEY_ENTER;
@@ -431,5 +446,9 @@ void getkey(void)
   if (rawkey == SDLK_KP7) key = '7';
   if (rawkey == SDLK_KP8) key = '8';
   if (rawkey == SDLK_KP9) key = '9';
+
+#ifdef __MACOSX__	
+  SDL_UpdateRect(gfx_screen, 0, 0, MAX_COLUMNS*8, MAX_ROWS*16);
+#endif
 }
 
