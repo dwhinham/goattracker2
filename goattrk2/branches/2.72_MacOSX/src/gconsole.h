@@ -22,7 +22,7 @@ void printbg(int x, int y, int color, int length);
 void getkey(void);
 
 #ifndef GCONSOLE_C
-extern int key, rawkey, shiftpressed, cursorflashdelay;
+extern int key, rawkey, shiftpressed, cursorflashdelay, altpressed;
 extern int mouseb, prevmouseb;
 extern int mouseheld;
 extern int mousex, mousey;

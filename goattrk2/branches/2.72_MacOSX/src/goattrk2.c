@@ -95,6 +95,10 @@ int main(int argc, char **argv)
   // Open datafile
   io_openlinkeddatafile(datafile);
 
+#ifdef __MACOSX__
+    InitializeMacMidi();
+#endif	
+	
   // Load configuration
   #ifdef __WIN32__
   GetModuleFileName(NULL, filename, MAX_PATHNAME);
@@ -105,7 +109,11 @@ int main(int argc, char **argv)
   strcpy(filename, "PROGDIR:goattrk2.cfg");
   #else
   strcpy(filename, getenv("HOME"));
+    #ifdef __MACOSX__
+  strcat(filename, "/Library/Preferences/org.c64.covertbitops.goattrk.cfg");
+    #else
   strcat(filename, "/.goattrk/goattrk2.cfg");
+    #endif
   #endif
   configfile = fopen(filename, "rt");
   if (configfile)
@@ -370,14 +378,18 @@ int main(int argc, char **argv)
 
   // Save configuration
   #ifndef __WIN32__
-  #ifdef __amigaos__
+    #ifdef __amigaos__
   strcpy(filename, "PROGDIR:goattrk2.cfg");
-  #else
+    #else
   strcpy(filename, getenv("HOME"));
+      #ifdef __MACOSX__
+  strcat(filename, "/Library/Preferences/org.c64.covertbitops.goattrk.cfg");
+      #else
   strcat(filename, "/.goattrk");
   mkdir(filename, S_IRUSR | S_IWUSR | S_IXUSR);
   strcat(filename, "/goattrk2.cfg");
-  #endif
+      #endif
+    #endif
   #endif
   configfile = fopen(filename, "wt");
   if (configfile)
@@ -488,6 +500,9 @@ void waitkeymouse(void)
     if ((rawkey) || (key)) break;
     if (win_quitted) break;
     if (mouseb) break;
+#ifdef __MACOSX__
+    if (MidiEventPending() != 0) break;
+#endif
   }
 
   converthex();
