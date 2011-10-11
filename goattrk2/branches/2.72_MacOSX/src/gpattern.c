@@ -853,32 +853,70 @@ void patterncommands(void)
     break;
 
     case KEY_DEL:
-    if (epmarkchn == epchn) epmarkchn = -1;
-    if ((pattlen[epnum[epchn]]-eppos)*4-4 >= 0)
-    {
-      memmove(&pattern[epnum[epchn]][eppos*4],
-        &pattern[epnum[epchn]][eppos*4+4],
-        (pattlen[epnum[epchn]]-eppos)*4-4);
-      pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-4] = REST;
-      pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-3] = 0x00;
-      pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-2] = 0x00;
-      pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-1] = 0x00;
-    }
-    else
-    {
-      if (eppos == pattlen[epnum[epchn]])
-      {
-        if (pattlen[epnum[epchn]] > 1)
-        {
-          pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-4] = ENDPATT;
-          pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-3] = 0x00;
-          pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-2] = 0x00;
-          pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-1] = 0x00;
-          countthispattern();
-          eppos = pattlen[epnum[epchn]];
-        }
-      }
-    }
+#ifdef __MACOSX__
+	if (altpressed)
+	{
+		if (epmarkchn == epchn) epmarkchn = -1;
+		if ((pattlen[epnum[epchn]]-eppos)*4-4 >= 0)
+		{
+			memmove(&pattern[epnum[epchn]][eppos*4+4],
+					&pattern[epnum[epchn]][eppos*4],
+					(pattlen[epnum[epchn]]-eppos)*4-4);
+			pattern[epnum[epchn]][eppos*4] = REST;
+			pattern[epnum[epchn]][eppos*4+1] = 0x00;
+			pattern[epnum[epchn]][eppos*4+2] = 0x00;
+			pattern[epnum[epchn]][eppos*4+3] = 0x00;
+		}
+		else
+		{
+			if (eppos == pattlen[epnum[epchn]])
+			{
+				if (pattlen[epnum[epchn]] < MAX_PATTROWS)
+				{
+					pattern[epnum[epchn]][eppos*4] = REST;
+					pattern[epnum[epchn]][eppos*4+1] = 0x00;
+					pattern[epnum[epchn]][eppos*4+2] = 0x00;
+					pattern[epnum[epchn]][eppos*4+3] = 0x00;
+					pattern[epnum[epchn]][eppos*4+4] = ENDPATT;
+					pattern[epnum[epchn]][eppos*4+5] = 0x00;
+					pattern[epnum[epchn]][eppos*4+6] = 0x00;
+					pattern[epnum[epchn]][eppos*4+7] = 0x00;
+					countthispattern();
+					eppos = pattlen[epnum[epchn]];
+				}
+			}
+		}
+	}
+	else
+#endif
+	{
+		if (epmarkchn == epchn) epmarkchn = -1;
+		if ((pattlen[epnum[epchn]]-eppos)*4-4 >= 0)
+		{
+		  memmove(&pattern[epnum[epchn]][eppos*4],
+			&pattern[epnum[epchn]][eppos*4+4],
+			(pattlen[epnum[epchn]]-eppos)*4-4);
+		  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-4] = REST;
+		  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-3] = 0x00;
+		  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-2] = 0x00;
+		  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-1] = 0x00;
+		}
+		else
+		{
+		  if (eppos == pattlen[epnum[epchn]])
+		  {
+			if (pattlen[epnum[epchn]] > 1)
+			{
+			  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-4] = ENDPATT;
+			  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-3] = 0x00;
+			  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-2] = 0x00;
+			  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-1] = 0x00;
+			  countthispattern();
+			  eppos = pattlen[epnum[epchn]];
+			}
+		  }
+		}
+	}
     break;
 
     case KEY_INS:

@@ -384,7 +384,12 @@ void tablecommands(void)
     break;
 
     case KEY_DEL:
-    deletetable(etnum, etpos);
+#ifdef __MACOSX__
+    if (altpressed)
+        inserttable(etnum, etpos, shiftpressed);
+    else
+#endif
+        deletetable(etnum, etpos);
     break;
 
     case KEY_INS:
