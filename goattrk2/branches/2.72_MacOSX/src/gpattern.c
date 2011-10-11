@@ -105,6 +105,8 @@ void patterncommands(void)
 			  }
 			  break;
       }
+      
+      virtualkeycode = 0xff; // Reset after handling
 	}
 	  
 #else

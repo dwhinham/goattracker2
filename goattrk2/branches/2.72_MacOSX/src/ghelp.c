@@ -246,6 +246,9 @@ void onlinehelp(int standalone,int context)
 
   int lastrow=0;
 
+  // Close menu once online help exits
+  menu = 0;
+  
   for (;;)
   {
     int left = hview + 2;

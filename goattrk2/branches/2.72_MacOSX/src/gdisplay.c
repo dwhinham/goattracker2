@@ -45,9 +45,19 @@ void printstatus(void)
 {
   int c, d, color;
   int cc = cursorcolortable[cursorflash];
+#ifndef __MACOSX__
   menu = 0;
+#endif
 
-  if ((mouseb > MOUSEB_LEFT) && (mousey <= 1) && (!eamode)) menu = 1;
+  if ((mouseb > MOUSEB_LEFT) && (mousey <= 1) && (!eamode))
+  {
+#ifndef __MACOSX__
+    menu = 1;
+#else
+    if (!prevmouseb)
+      menu ^= 1;
+#endif
+  }
 
   printblankc(0, 0, 15+16, MAX_COLUMNS);
 

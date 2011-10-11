@@ -55,6 +55,8 @@ int fileselector(char *name, char *path, char *filter, char *title, int filemode
   char cmpbuf[MAX_PATHNAME];
   char tempname[MAX_PATHNAME];
 
+  // Close the menu once fileselector exits
+  menu = 0;
   // Set initial path (if any)
   if (strlen(path)) chdir(path);
 
