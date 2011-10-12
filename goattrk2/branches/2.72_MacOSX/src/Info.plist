@@ -50,7 +50,7 @@
 	<key>CFBundleExecutable</key>
 	<string>GoatTracker</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Version 2.68</string>
+	<string>Version 2.72</string>
 	<key>CFBundleIconFile</key>
 	<string>goat.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -64,7 +64,7 @@
 	<key>CFBundleSignature</key>
 	<string>GOAT</string>
 	<key>CFBundleVersion</key>
-	<string>2.68</string>
+	<string>2.72</string>
 	<key>NSMainNibFile</key>
 	<string>SDLMain</string>
 	<key>NSPrincipalClass</key>
