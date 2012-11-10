@@ -595,6 +595,9 @@ void mousecommands(void)
 
   if (!mouseb) return;
 
+  // Ensure any previous keystroke is cleared so we don't get unwanted editing when clicking somewhere else.
+  virtualkeycode = 0xff;
+
   // Pattern editpos & pattern number selection
   for (c = 0; c < MAX_CHN; c++)
   {
