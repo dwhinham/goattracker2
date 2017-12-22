@@ -9,8 +9,6 @@
 #include "resid/sid.h"
 #include "resid-fp/sidfp.h"
 
-extern "C" {
-
 #include "gsid.h"
 #include "gsound.h"
 
@@ -196,4 +194,3 @@ int sid_fillbuffer(short *ptr, int samples)
   return total;
 }
 
-}

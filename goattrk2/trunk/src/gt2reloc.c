@@ -438,3 +438,7 @@ void calculatefreqtable()
     freqtblhi[c] = intfreq >> 8;
   }
 }
+
+#define GT2RELOC
+
+#include "greloc.c"

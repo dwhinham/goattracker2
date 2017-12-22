@@ -176,7 +176,7 @@ int main(int argc, char **argv)
     getfloatparam(configfile, &filterparams.type4k);
     getfloatparam(configfile, &filterparams.type4b);
     getfloatparam(configfile, &filterparams.voicenonlinearity);
-    getparam(configfile, &win_fullscreen);
+    getparam(configfile, (unsigned*)&win_fullscreen);
     getfloatparam(configfile, &basepitch);
     fclose(configfile);
   }
