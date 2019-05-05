@@ -2,8 +2,8 @@
 
 CC?=gcc
 CXX?=g++
-CFLAGS+=-Ibme -Iasm -O3 -fpermissive
-CXXFLAGS+=$(CFLAGS)
+CFLAGS+=-Ibme -Iasm -O3
+CXXFLAGS+=$(CFLAGS) -fpermissive
 
 EXE=	$(PREFIX)goattrk2$(SUFFIX) \
 	$(PREFIX)gt2reloc$(SUFFIX) \
