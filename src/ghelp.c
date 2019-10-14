@@ -37,11 +37,13 @@ void onlinehelp(int standalone,int context)
     "SHIFT+F5-F6 Change speed multiplier",
     "SHIFT+F7 Change hardrestart ADSR",
     "SHIFT+F8 Switch between 6581/8580 SID",
-    "SHIFT+F10 Merge-load song",
     "SHIFT+, . Move song startpos & restart",
     "TAB Cycle between editing modes",
     "INS Insert row (Press on endmark to",
     "DEL Delete row change patt. length)",
+#ifdef __MACOSX__    
+    "ALT+DEL emulates INS on Mac OS X",
+#endif    
     "SHIFT+ESC Clear/optimize all musicdata",
     "ESC Exit program",
     NULL
@@ -244,6 +246,9 @@ void onlinehelp(int standalone,int context)
 
   int lastrow=0;
 
+  // Close menu once online help exits
+  menu = 0;
+  
   for (;;)
   {
     int left = hview + 2;

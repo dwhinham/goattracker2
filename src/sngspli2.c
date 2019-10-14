@@ -38,6 +38,7 @@ int targetlen = 16;
 
 int wavelen = 0, pulselen = 0, filtlen = 0;
 
+int main(int argc, char **argv);
 int loadsong(char *name);
 int savesong(char *name);
 int processsong(void);
@@ -56,12 +57,12 @@ int main(int argc, char **argv)
            "memory. For safety reasons source & destination cannot be same, because\n"
            "a splitted song is harder to edit. Always keep the original!\n\n"
            "Default length is 16.\n");
-    return EXIT_FAILURE;
+    return 1;
   }
   if (!strcmp(argv[1], argv[2]))
   {
     printf("ERROR: Source and destination are not allowed to be the same.");
-    return EXIT_FAILURE;
+    return 1;
   }
 
   if (argc >= 4)
@@ -74,18 +75,18 @@ int main(int argc, char **argv)
   if (!loadsong(argv[1]))
   {
     printf("ERROR: Couldn't load source song.");
-    return EXIT_FAILURE;
+    return 1;
   }
   if (!processsong())
   {
-    return EXIT_FAILURE;
+    return 1;
   }
   if (!savesong(argv[2]))
   {
     printf("ERROR: Couldn't save destination song.");
-    return EXIT_FAILURE;
+    return 1;
   }
-  return EXIT_SUCCESS;
+  return 0;
 }
 
 int processsong(void)
@@ -544,3 +545,4 @@ int gettablelen(int num)
   }
   return c+1;
 }
+

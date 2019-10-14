@@ -15,7 +15,7 @@ char *notename[] =
   "C-5", "C#5", "D-5", "D#5", "E-5", "F-5", "F#5", "G-5", "G#5", "A-5", "A#5", "B-5",
   "C-6", "C#6", "D-6", "D#6", "E-6", "F-6", "F#6", "G-6", "G#6", "A-6", "A#6", "B-6",
   "C-7", "C#7", "D-7", "D#7", "E-7", "F-7", "F#7", "G-7", "G#7", "...", "---", "+++"};
-
+  
 char timechar[] = {':', ' '};
 
 int timemin = 0;
@@ -43,11 +43,21 @@ void displayupdate(void)
 
 void printstatus(void)
 {
-  int c, d, color, color2;
+  int c, d, color;
   int cc = cursorcolortable[cursorflash];
+#ifndef __MACOSX__
   menu = 0;
+#endif
 
-  if ((mouseb > MOUSEB_LEFT) && (mousey <= 1) && (!eamode)) menu = 1;
+  if ((mouseb > MOUSEB_LEFT) && (mousey <= 1) && (!eamode))
+  {
+#ifndef __MACOSX__
+    menu = 1;
+#else
+    if (!prevmouseb)
+      menu ^= 1;
+#endif
+  }
 
   printblankc(0, 0, 15+16, MAX_COLUMNS);
 
@@ -156,7 +166,7 @@ void printstatus(void)
       }
       else
       {
-        if (!(patterndispmode & 1))
+        if (!patternhex)
         {
           if (p < 100)
             sprintf(textbuffer, " %02d", p);
@@ -178,13 +188,6 @@ void printstatus(void)
             pattern[epnum[c]][p*4+1],
             pattern[epnum[c]][p*4+2],
             pattern[epnum[c]][p*4+3]);
-          if (patterndispmode & 2)
-          {
-            if (!pattern[epnum[c]][p*4+1])
-              memset(&textbuffer[8], '.', 2);
-            if (!pattern[epnum[c]][p*4+2])
-              memset(&textbuffer[10], '.', 3);
-          }
         }
       }
       textbuffer[3] = 0;
@@ -196,14 +199,7 @@ void printstatus(void)
       {
         printtext(2+c*15, 3+d, CCOMMAND, textbuffer);
       }
-      if (color == CNORMAL)
-        color2 = CCOMMAND;
-      else
-        color2 = color;
-      printtext(6+c*15, 3+d, color2, &textbuffer[4]);
-      printtext(10+c*15, 3+d, color, &textbuffer[8]);
-      printtext(12+c*15, 3+d, color2, &textbuffer[10]);
-      printtext(13+c*15, 3+d, color, &textbuffer[11]);
+      printtext(6+c*15, 3+d, color, &textbuffer[4]);
       if (c == epmarkchn)
       {
         if (epmarkstart <= epmarkend)

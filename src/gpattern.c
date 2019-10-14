@@ -6,6 +6,23 @@
 
 #include "goattrk2.h"
 
+#ifdef __MACOSX__
+
+int virtualkeycode = 0xff;
+
+// Use actual physical keycodes, to make sure the virtual tracker keyboard is
+// the same on all keyboard layouts
+unsigned char notekeytbl1[] = {0x06, 0x01, 0x07, 0x02, 0x08, 0x09,
+0x05, 0x0b, 0x04, 0x2d, 0x26, 0x2e, 0x2b, 0x25, 0x2f};
+
+unsigned char notekeytbl2[] = {0x0c, 0x13, 0x0d, 0x14, 0x0e, 0x0f,
+0x17, 0x11, 0x16, 0x10, 0x1a, 0x20, 0x22, 0x19, 0x1f, 0x1d, 0x23};
+
+unsigned char dmckeytbl[] = {0x00, 0x0d, 0x01, 0x0e, 0x02, 0x03,
+0x11, 0x05, 0x10, 0x04, 0x20, 0x26, 0x28, 0x1f, 0x25, 0x23};
+
+#else
+
 unsigned char notekeytbl1[] = {KEY_Z, KEY_S, KEY_X, KEY_D, KEY_C, KEY_V,
   KEY_G, KEY_B, KEY_H, KEY_N, KEY_J, KEY_M, KEY_COMMA, KEY_L, KEY_COLON};
 
@@ -15,11 +32,7 @@ unsigned char notekeytbl2[] = {KEY_Q, KEY_2, KEY_W, KEY_3, KEY_E, KEY_R,
 unsigned char dmckeytbl[] = {KEY_A, KEY_W, KEY_S, KEY_E, KEY_D, KEY_F,
   KEY_T, KEY_G, KEY_Y, KEY_H, KEY_U, KEY_J, KEY_K, KEY_O, KEY_L, KEY_P};
 
-unsigned char jankokeytbl1[] = {KEY_Z, KEY_S, KEY_X, KEY_D, KEY_C, KEY_F, KEY_V,
-  KEY_G, KEY_B, KEY_H, KEY_N, KEY_J, KEY_M, KEY_K, KEY_COMMA, KEY_L, KEY_COLON};
-
-unsigned char jankokeytbl2[] = {KEY_Q, KEY_2, KEY_W, KEY_3, KEY_E, KEY_4, KEY_R,
-  KEY_5, KEY_T, KEY_6, KEY_Y, KEY_7, KEY_U, KEY_8, KEY_I, KEY_9, KEY_O, KEY_0, KEY_P};
+#endif
 
 unsigned char patterncopybuffer[MAX_PATTROWS*4+4];
 unsigned char cmdcopybuffer[MAX_PATTROWS*4+4];
@@ -56,6 +69,48 @@ void patterncommands(void)
   }
   {
     int newnote = -1;
+#ifdef __MACOSX__
+    int midinote = -1;
+
+	// Use actual physical keycodes, to make sure the virtual tracker keyboard is
+	// the same on all keyboard layouts
+	if (virtualkeycode != 0xff)
+	{
+      switch (keypreset)
+      {
+		  case KEY_TRACKER:
+			  for (c = 0; c < sizeof(notekeytbl1); c++)
+			  {
+				  if ((virtualkeycode == notekeytbl1[c]) && (!epcolumn) && (!shiftpressed))
+				  {
+					  newnote = FIRSTNOTE+c+epoctave*12;
+				  }
+			  }
+			  for (c = 0; c < sizeof(notekeytbl2); c++)
+			  {
+				  if ((virtualkeycode == notekeytbl2[c]) && (!epcolumn) && (!shiftpressed))
+				  {
+					  newnote = FIRSTNOTE+c+(epoctave+1)*12;
+				  }
+			  }
+			  break;
+			  
+		  case KEY_DMC:
+			  for (c = 0; c < sizeof(dmckeytbl); c++)
+			  {
+				  if ((virtualkeycode == dmckeytbl[c]) && (!epcolumn) && (!shiftpressed))
+				  {
+					  newnote = FIRSTNOTE+c+epoctave*12;
+				  }
+			  }
+			  break;
+      }
+      
+      virtualkeycode = 0xff; // Reset after handling
+	}
+	  
+#else
+	  
     if (key)
     {
       switch (keypreset)
@@ -86,26 +141,17 @@ void patterncommands(void)
           }
         }
         break;
-        
-        case KEY_JANKO:
-        for (c = 0; c < sizeof(jankokeytbl1); c++)
-        {
-          if ((rawkey == jankokeytbl1[c]) && (!epcolumn) && (!shiftpressed))
-          {
-            newnote = FIRSTNOTE+c+epoctave*12;
-          }
-        }
-        for (c = 0; c < sizeof(jankokeytbl2); c++)
-        {
-          if ((rawkey == jankokeytbl2[c]) && (!epcolumn) && (!shiftpressed))
-          {
-            newnote = FIRSTNOTE+c+(epoctave+1)*12;
-          }
-        }
-        break;
       }
     }
-
+#endif
+	  
+	  
+#ifdef __MACOSX__
+    midinote = GetMidiNote();
+	if (midinote != -1 && (!epcolumn) && (!shiftpressed))
+		newnote = midinote;
+#endif
+	  
     if (newnote > LASTNOTE) newnote = -1;
     if ((rawkey == 0x08) && (!epcolumn)) newnote = REST;
     if ((rawkey == 0x14) && (!epcolumn)) newnote = KEYOFF;
@@ -809,32 +855,70 @@ void patterncommands(void)
     break;
 
     case KEY_DEL:
-    if (epmarkchn == epchn) epmarkchn = -1;
-    if ((pattlen[epnum[epchn]]-eppos)*4-4 >= 0)
-    {
-      memmove(&pattern[epnum[epchn]][eppos*4],
-        &pattern[epnum[epchn]][eppos*4+4],
-        (pattlen[epnum[epchn]]-eppos)*4-4);
-      pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-4] = REST;
-      pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-3] = 0x00;
-      pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-2] = 0x00;
-      pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-1] = 0x00;
-    }
-    else
-    {
-      if (eppos == pattlen[epnum[epchn]])
-      {
-        if (pattlen[epnum[epchn]] > 1)
-        {
-          pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-4] = ENDPATT;
-          pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-3] = 0x00;
-          pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-2] = 0x00;
-          pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-1] = 0x00;
-          countthispattern();
-          eppos = pattlen[epnum[epchn]];
-        }
-      }
-    }
+#ifdef __MACOSX__
+	if (altpressed)
+	{
+		if (epmarkchn == epchn) epmarkchn = -1;
+		if ((pattlen[epnum[epchn]]-eppos)*4-4 >= 0)
+		{
+			memmove(&pattern[epnum[epchn]][eppos*4+4],
+					&pattern[epnum[epchn]][eppos*4],
+					(pattlen[epnum[epchn]]-eppos)*4-4);
+			pattern[epnum[epchn]][eppos*4] = REST;
+			pattern[epnum[epchn]][eppos*4+1] = 0x00;
+			pattern[epnum[epchn]][eppos*4+2] = 0x00;
+			pattern[epnum[epchn]][eppos*4+3] = 0x00;
+		}
+		else
+		{
+			if (eppos == pattlen[epnum[epchn]])
+			{
+				if (pattlen[epnum[epchn]] < MAX_PATTROWS)
+				{
+					pattern[epnum[epchn]][eppos*4] = REST;
+					pattern[epnum[epchn]][eppos*4+1] = 0x00;
+					pattern[epnum[epchn]][eppos*4+2] = 0x00;
+					pattern[epnum[epchn]][eppos*4+3] = 0x00;
+					pattern[epnum[epchn]][eppos*4+4] = ENDPATT;
+					pattern[epnum[epchn]][eppos*4+5] = 0x00;
+					pattern[epnum[epchn]][eppos*4+6] = 0x00;
+					pattern[epnum[epchn]][eppos*4+7] = 0x00;
+					countthispattern();
+					eppos = pattlen[epnum[epchn]];
+				}
+			}
+		}
+	}
+	else
+#endif
+	{
+		if (epmarkchn == epchn) epmarkchn = -1;
+		if ((pattlen[epnum[epchn]]-eppos)*4-4 >= 0)
+		{
+		  memmove(&pattern[epnum[epchn]][eppos*4],
+			&pattern[epnum[epchn]][eppos*4+4],
+			(pattlen[epnum[epchn]]-eppos)*4-4);
+		  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-4] = REST;
+		  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-3] = 0x00;
+		  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-2] = 0x00;
+		  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-1] = 0x00;
+		}
+		else
+		{
+		  if (eppos == pattlen[epnum[epchn]])
+		  {
+			if (pattlen[epnum[epchn]] > 1)
+			{
+			  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-4] = ENDPATT;
+			  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-3] = 0x00;
+			  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-2] = 0x00;
+			  pattern[epnum[epchn]][pattlen[epnum[epchn]]*4-1] = 0x00;
+			  countthispattern();
+			  eppos = pattlen[epnum[epchn]];
+			}
+		  }
+		}
+	}
     break;
 
     case KEY_INS:
@@ -988,7 +1072,7 @@ void patterncommands(void)
       mutechannel(rawkey - KEY_1);
     break;
   }
-  if ((keypreset == KEY_DMC) && (hexnybble >= 0) && (hexnybble <= 7) && (!epcolumn))
+  if ((keypreset != KEY_TRACKER) && (hexnybble >= 0) && (hexnybble <= 7) && (!epcolumn))
   {
     int oldbyte = pattern[epnum[epchn]][eppos*4];
     epoctave = hexnybble;

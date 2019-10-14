@@ -1,5 +1,5 @@
 ;-------------------------------------------------------------------------------
-; GoatTracker V2.73 playroutine
+; GoatTracker V2.68 playroutine
 ;
 ; NOTE: This playroutine source code does not fall under the GPL license!
 ; Use it, or song binaries created from it freely for any purpose, commercial
@@ -195,7 +195,7 @@ mt_tick0_5:
               .IF (BUFFEREDWRITES == 0)
                 sta SIDBASE+$05,x
               .ELSE
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 sta mt_chnad,x
               .ELSE
                 sta <ghostad,x
@@ -211,7 +211,7 @@ mt_tick0_6:
               .IF (BUFFEREDWRITES == 0)
                 sta SIDBASE+$06,x
               .ELSE
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 sta mt_chnsr,x
               .ELSE
                 sta <ghostsr,x
@@ -433,7 +433,7 @@ mt_effectnum:
               .ENDIF
               .IF (NOTONEPORTA == 0)
                 ldy mt_chnnote,y
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 lda mt_chnfreqlo,x              ;Calculate offset to the
                 sbc mt_freqtbllo-FIRSTNOTE,y    ;right frequency
                 pha
@@ -459,7 +459,7 @@ mt_effect_3_up:
 
               .IF ((NOTONEPORTA == 0) || (NOPORTAMENTO == 0) || (NOVIB == 0))
 mt_freqadd:
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 lda mt_chnfreqlo,x
                 adc <mt_temp1
                 sta mt_chnfreqlo,x
@@ -484,7 +484,7 @@ mt_effect_3_down:
 
               .IF ((NOTONEPORTA == 0) || (NOPORTAMENTO == 0) || (NOVIB == 0))
 mt_freqsub:
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 lda mt_chnfreqlo,x
                 sbc <mt_temp1
                 sta mt_chnfreqlo,x
@@ -556,16 +556,7 @@ mt_setmastervol:
 
         ;Playroutine
 
-mt_play:        
-                .IF ((ZPGHOSTREGS == 0) && (GHOSTREGS != 0))
-                ldx #24                         ;In full ghosting mode copy
-mt_copyregs:    lda ghostregs,x                 ;previous frame's SID values in one step
-                sta SIDBASE,x
-                dex
-                bpl mt_copyregs
-                .ENDIF
-
-                ldx #$00                        ;Channel index
+mt_play:        ldx #$00                        ;Channel index
 
         ;Song initialization
 
@@ -578,7 +569,7 @@ mt_resetloop:
                 sta mt_chnsongptr,x             ;Reset sequencer + voice
                 dex                             ;variables on all channels
                 bpl mt_resetloop
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
               .IF (NUMCHANNELS == 2)
                 sta SIDBASE+$12
               .ENDIF
@@ -675,7 +666,7 @@ mt_filtdone:
 mt_filtcutoff:
                 lda #$00
 mt_storecutoff:
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 sta SIDBASE+$16
               .ELSE
                 sta <ghostfiltcutoff
@@ -683,7 +674,7 @@ mt_storecutoff:
               .ENDIF
 mt_filtctrl:
                 lda #$00
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 sta SIDBASE+$17
               .ELSE
                 sta <ghostfiltctrl
@@ -692,7 +683,7 @@ mt_filttype:
                 lda #$00
 mt_masterfader:
                 ora #$0f                        ;Master volume fader
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 sta SIDBASE+$18
               .ELSE
                 sta <ghostfilttype
@@ -882,7 +873,7 @@ mt_skipfilt:
               .IF (BUFFEREDWRITES == 0)
                 sta SIDBASE+$06,x
               .ELSE
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 sta mt_chnsr,x
               .ELSE
                 sta <ghostsr,x
@@ -892,7 +883,7 @@ mt_skipfilt:
               .IF (BUFFEREDWRITES == 0)
                 sta SIDBASE+$05,x
               .ELSE
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 sta mt_chnad,x
               .ELSE
                 sta <ghostad,x
@@ -1066,7 +1057,7 @@ mt_wavenote:
                 sta mt_chnvibtime,x
               .ENDIF
                 lda mt_freqtbllo-FIRSTNOTE,y
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 sta mt_chnfreqlo,x
                 lda mt_freqtblhi-FIRSTNOTE,y
 mt_storefreqhi:
@@ -1116,14 +1107,14 @@ mt_newpulsestep:
               .ENDIF
 mt_setpulse:
               .IF (SIMPLEPULSE == 0)
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 sta mt_chnpulsehi,x             ;Highbyte
               .ELSE
                 sta <ghostpulsehi,x
               .ENDIF
               .ENDIF
                 lda mt_pulsespdtbl-1,y          ;Lowbyte
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 sta mt_chnpulselo,x
               .ELSE
                 sta <ghostpulselo,x
@@ -1140,7 +1131,7 @@ mt_pulsemod:
                 lda mt_pulsespdtbl-1,y          ;Take pulse speed
                 clc
                 bpl mt_pulseup
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 dec mt_chnpulsehi,x
 mt_pulseup:
                 adc mt_chnpulselo,x             ;Add pulse lowbyte
@@ -1157,7 +1148,7 @@ mt_pulseup:
               .ENDIF
 mt_pulsenotover:
               .ELSE
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 lda mt_chnpulselo,x
                 clc
                 adc mt_pulsespdtbl-1,y
@@ -1313,17 +1304,17 @@ mt_normalnote:
               .IF (BUFFEREDWRITES == 0)
                 sta SIDBASE+$06,x
               .ELSE
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 sta mt_chnsr,x
               .ELSE
                 sta <ghostsr,x
               .ENDIF
-              .ENDIF
-                lda #ADPARAM
+              .ENDIF                
+                lda #ADPARAM                 
               .IF (BUFFEREDWRITES == 0)
                 sta SIDBASE+$05,x
               .ELSE
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
                 sta mt_chnad,x
               .ELSE
                 sta <ghostad,x
@@ -1363,11 +1354,7 @@ mt_loadregswaveonly:
                 ldy mt_chnsfx,y
                 bne mt_sfxexec
               .ENDIF
-              .IF (GHOSTREGS == 0)
-                lda mt_chnad,x
-                sta SIDBASE+$05,x
-                lda mt_chnsr,x
-                sta SIDBASE+$06,x
+              .IF (ZPGHOSTREGS == 0)
                 lda mt_chnpulselo,x
               .IF (SIMPLEPULSE == 0)
                 sta SIDBASE+$02,x
@@ -1377,6 +1364,10 @@ mt_loadregswaveonly:
                 sta SIDBASE+$02,x
                 sta SIDBASE+$03,x
               .ENDIF
+                lda mt_chnsr,x
+                sta SIDBASE+$06,x              
+                lda mt_chnad,x
+                sta SIDBASE+$05,x
 mt_loadregswavefreq:
                 lda mt_chnfreqlo,x
                 sta SIDBASE+$00,x
@@ -1405,7 +1396,7 @@ mt_nohr_legato:
         ;Sound FX code
 
               .IF (SOUNDSUPPORT != 0)
-              .IF (GHOSTREGS == 0)
+              .IF (ZPGHOSTREGS == 0)
 
         ;Sound FX code without ghostregs
 
@@ -1596,7 +1587,7 @@ mt_funktempotbl:
               .ENDIF
               .ENDIF
 
-              .IF ((NOEFFECTS == 0) || (NOWAVEDELAY == 0) || (NOTRANS == 0) || (NOREPEAT == 0) || (FIXEDPARAMS == 0) || (GHOSTREGS != 0) || (BUFFEREDWRITES != 0) || (NOCALCULATEDSPEED == 0))
+              .IF ((NOEFFECTS == 0) || (NOWAVEDELAY == 0) || (NOTRANS == 0) || (NOREPEAT == 0) || (FIXEDPARAMS == 0) || (ZPGHOSTREGS != 0) || (BUFFEREDWRITES != 0) || (NOCALCULATEDSPEED == 0))
 
               ;Normal channel variables
 
@@ -1666,7 +1657,7 @@ mt_chngate:
                 .BYTE (2,0,0,0,0,1,$fe)
               .ENDIF
 
-              .IF ((GHOSTREGS == 0) || (NOCALCULATEDSPEED == 0))
+              .IF ((ZPGHOSTREGS == 0) || (NOCALCULATEDSPEED == 0))
 
 mt_chnvibtime:
                 .BYTE (0)
@@ -1811,21 +1802,6 @@ mt_chngate:
                 .BYTE (2,0,0,0,0,1,$fe)
               .ENDIF
 
-              .ENDIF
-
-              .IF ((GHOSTREGS != 0) && (ZPGHOSTREGS == 0))
-ghostregs:    .BYTE (0,0,0,0,0,0,0, 0,0,0,0,0,0,0, 0,0,0,0,0,0,0, 0,0,0,0)
-ghostfreqlo     = ghostregs+0
-ghostfreqhi     = ghostregs+1
-ghostpulselo    = ghostregs+2
-ghostpulsehi    = ghostregs+3
-ghostwave       = ghostregs+4
-ghostad         = ghostregs+5
-ghostsr         = ghostregs+6
-ghostfiltcutlow = ghostregs+21
-ghostfiltcutoff = ghostregs+22
-ghostfiltctrl   = ghostregs+23
-ghostfilttype   = ghostregs+24
               .ENDIF
 
         ;Songdata & frequencytable will be inserted by the relocator here

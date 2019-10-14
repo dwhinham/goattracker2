@@ -684,7 +684,7 @@ void playroutine(void)
               break;
 
               case CMD_SETMASTERVOL:
-              if (param < 0x10)
+              if (cptr->newcmddata < 0x10)
                 masterfader = param;
               break;
             }

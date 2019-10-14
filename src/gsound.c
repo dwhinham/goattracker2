@@ -195,7 +195,7 @@ int sound_init(unsigned b, unsigned mr, unsigned writer, unsigned hardsid, unsig
     goto SOUNDOK;
   }
 
-  if (!buffer) buffer = (Sint16*)malloc(MIXBUFFERSIZE * sizeof(Sint16));
+  if (!buffer) buffer = malloc(MIXBUFFERSIZE * sizeof(Sint16));
   if (!buffer) return 0;
 
   if (writer)
@@ -390,8 +390,17 @@ int sound_thread(void *userdata)
     {
       unsigned o = sid_getorder(c);
 
-      HardSID_Write(usehardsid-1, SIDWRITEDELAY, o, sidreg[o]);
-      cycles -= SIDWRITEDELAY;
+        // Extra delay before loading the waveform (and mt_chngate,x)
+        if ((o == 4) || (o == 11) || (o == 18))
+        {
+        HardSID_Write(usehardsid-1, SIDWRITEDELAY+SIDWAVEDELAY, o, sidreg[o]);
+          cycles -= SIDWRITEDELAY+SIDWAVEDELAY;
+      }
+        else
+      {
+            HardSID_Write(usehardsid-1, SIDWRITEDELAY, o, sidreg[o]);
+            cycles -= SIDWRITEDELAY;
+        }
     }
 
     // Now wait the rest of frame

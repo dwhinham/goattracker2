@@ -5,6 +5,8 @@
 #define MAX_ROWS 37
 #define HOLDDELAY 24
 #define DOUBLECLICKDELAY 15
+#define MOUSESIZEX 11
+#define MOUSESIZEY 20
 
 int initscreen(void);
 void closescreen(void);
@@ -20,11 +22,10 @@ void printbg(int x, int y, int color, int length);
 void getkey(void);
 
 #ifndef GCONSOLE_C
-extern int key, rawkey, shiftpressed, cursorflashdelay;
+extern int key, rawkey, shiftpressed, cursorflashdelay, altpressed;
 extern int mouseb, prevmouseb;
 extern int mouseheld;
 extern int mousex, mousey;
-extern unsigned bigwindow;
 #endif
 
 #endif

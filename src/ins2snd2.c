@@ -9,6 +9,7 @@
 #include "bme_end.h"
 #include "gcommon.h"
 
+int main(int argc, char **argv);
 unsigned char swapnybbles(unsigned char n);
 void outputbyte(unsigned char c);
 
@@ -49,7 +50,7 @@ int main(int argc, char **argv)
            "- Wavetable loops\n"
            "- Pulsewidth modulation\n"
            "- Filter settings\n");
-    return EXIT_FAILURE;
+    return 1;
   }
 
   if (argc > 3)
@@ -78,7 +79,7 @@ int main(int argc, char **argv)
   if (!handle)
   {
     printf("ERROR: Can't open instrumentfile\n");
-    return EXIT_FAILURE;
+    return 1;
   }
 
   memset(wavetable, 0, MAX_TABLELEN*2);
@@ -164,7 +165,7 @@ int main(int argc, char **argv)
   if (!fileok)
   {
     printf("ERROR: File is not a GoatTracker instrument!\n");
-    return EXIT_FAILURE;
+    return 1;
   }
 
   if (!binary)
@@ -175,7 +176,7 @@ int main(int argc, char **argv)
   if (!out)
   {
     printf("ERROR: Can't write to output file.\n");
-    return EXIT_FAILURE;
+    return 1;
   }
 
   d = 0;
@@ -198,13 +199,13 @@ int main(int argc, char **argv)
     {
       printf("ERROR: Relative note or absolute C-0, C#0 found\n");
       fclose(out);
-      return EXIT_FAILURE;
+      return 1;
     }
     if (wavetable[c*2] > 0x81)
     {
       printf("ERROR: Waveform greater than $81 found\n");
       fclose(out);
-      return EXIT_FAILURE;
+      return 1;
     }
     if (wavetable[c*2])
     {
@@ -223,10 +224,10 @@ int main(int argc, char **argv)
   {
     fclose(out);
     printf("ERROR: Sound effect exceeds 255 bytes\n");
-    return EXIT_FAILURE;
+    return 1;
   }
   fclose(out);
-  return EXIT_SUCCESS;
+  return 0;
 }
 
 void outputbyte(unsigned char c)
@@ -274,3 +275,4 @@ unsigned char swapnybbles(unsigned char n)
 
   return (lownybble << 4) | highnybble;
 }
+

@@ -25,6 +25,10 @@
 #include "ginstr.h"
 #include "gtable.h"
 
+#ifdef __MACOSX__
+#include "mac_midi.h"
+#endif
+
 #define EDIT_PATTERN 0
 #define EDIT_ORDERLIST 1
 #define EDIT_INSTRUMENT 2
@@ -33,7 +37,6 @@
 
 #define KEY_TRACKER 0
 #define KEY_DMC 1
-#define KEY_JANKO 2
 
 #define VISIBLEPATTROWS 31
 #define VISIBLEORDERLIST 15
@@ -65,7 +68,7 @@ extern unsigned sidmodel;
 extern unsigned multiplier;
 extern unsigned adparam;
 extern unsigned ntsc;
-extern unsigned patterndispmode;
+extern unsigned patternhex;
 extern unsigned sidaddress;
 extern unsigned finevibrato;
 extern unsigned optimizepulse;
@@ -90,7 +93,6 @@ extern char instrfilter[MAX_FILENAME];
 extern char instrpath[MAX_PATHNAME];
 extern char packedpath[MAX_PATHNAME];
 extern char *programname;
-extern char *notename[];
 extern char textbuffer[MAX_PATHNAME];
 extern unsigned char hexkeytbl[16];
 extern unsigned char datafile[];
@@ -98,7 +100,6 @@ extern unsigned char datafile[];
 
 void getparam(FILE *handle, unsigned *value);
 void getfloatparam(FILE *handle, float *value);
-void getstringparam(FILE *handle, char *value);
 void waitkey(void);
 void waitkeymouse(void);
 void waitkeynoupdate(void);
@@ -116,7 +117,5 @@ void prevmultiplier(void);
 void nextmultiplier(void);
 void editadsr(void);
 void calculatefreqtable(void);
-void setspecialnotenames(void);
-void readscalatuningfile(void);
 
 #endif
