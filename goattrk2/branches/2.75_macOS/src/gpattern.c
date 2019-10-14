@@ -21,6 +21,12 @@ unsigned char notekeytbl2[] = {0x0c, 0x13, 0x0d, 0x14, 0x0e, 0x0f,
 unsigned char dmckeytbl[] = {0x00, 0x0d, 0x01, 0x0e, 0x02, 0x03,
 0x11, 0x05, 0x10, 0x04, 0x20, 0x26, 0x28, 0x1f, 0x25, 0x23};
 
+unsigned char jankokeytbl1[] = {0x06, 0x01, 0x07, 0x02, 0x08, 0x03, 0x09,
+  0x05, 0x0b, 0x04, 0x2d, 0x26, 0x2e, 0x28, 0x2b, 0x25, 0x29};
+
+unsigned char jankokeytbl2[] = {0x0c, 0x13, 0x0d, 0x14, 0x0e, 0x15, 0x0f,
+  0x17, 0x11, 0x16, 0x10, 0x1a, 0x20, 0x1c, 0x22, 0x19, 0x1f, 0x1d, 0x23};
+
 #else
 
 unsigned char notekeytbl1[] = {KEY_Z, KEY_S, KEY_X, KEY_D, KEY_C, KEY_V,
@@ -31,6 +37,12 @@ unsigned char notekeytbl2[] = {KEY_Q, KEY_2, KEY_W, KEY_3, KEY_E, KEY_R,
 
 unsigned char dmckeytbl[] = {KEY_A, KEY_W, KEY_S, KEY_E, KEY_D, KEY_F,
   KEY_T, KEY_G, KEY_Y, KEY_H, KEY_U, KEY_J, KEY_K, KEY_O, KEY_L, KEY_P};
+
+unsigned char jankokeytbl1[] = {KEY_Z, KEY_S, KEY_X, KEY_D, KEY_C, KEY_F, KEY_V,
+  KEY_G, KEY_B, KEY_H, KEY_N, KEY_J, KEY_M, KEY_K, KEY_COMMA, KEY_L, KEY_COLON};
+
+unsigned char jankokeytbl2[] = {KEY_Q, KEY_2, KEY_W, KEY_3, KEY_E, KEY_4, KEY_R,
+  KEY_5, KEY_T, KEY_6, KEY_Y, KEY_7, KEY_U, KEY_8, KEY_I, KEY_9, KEY_O, KEY_0, KEY_P};
 
 #endif
 
@@ -76,6 +88,7 @@ void patterncommands(void)
 	// the same on all keyboard layouts
 	if (virtualkeycode != 0xff)
 	{
+		printf("virtualkeycode=%02x\n", virtualkeycode);
       switch (keypreset)
       {
 		  case KEY_TRACKER:
@@ -104,6 +117,24 @@ void patterncommands(void)
 				  }
 			  }
 			  break;
+
+		  case KEY_JANKO:
+			  for (c = 0; c < sizeof(jankokeytbl1); c++)
+			  {
+				  if ((virtualkeycode == jankokeytbl1[c]) && (!epcolumn) && (!shiftpressed))
+				  {
+					  newnote = FIRSTNOTE+c+epoctave*12;
+				  }
+			  }
+			  for (c = 0; c < sizeof(jankokeytbl2); c++)
+			  {
+				  if ((virtualkeycode == jankokeytbl2[c]) && (!epcolumn) && (!shiftpressed))
+				  {
+					  newnote = FIRSTNOTE+c+(epoctave+1)*12;
+				  }
+			  }
+			  break;
+			  
       }
       
       virtualkeycode = 0xff; // Reset after handling
@@ -138,6 +169,23 @@ void patterncommands(void)
           if ((rawkey == dmckeytbl[c]) && (!epcolumn) && (!shiftpressed))
           {
             newnote = FIRSTNOTE+c+epoctave*12;
+          }
+        }
+        break;
+        
+        case KEY_JANKO:
+        for (c = 0; c < sizeof(jankokeytbl1); c++)
+        {
+          if ((rawkey == jankokeytbl1[c]) && (!epcolumn) && (!shiftpressed))
+          {
+            newnote = FIRSTNOTE+c+epoctave*12;
+          }
+        }
+        for (c = 0; c < sizeof(jankokeytbl2); c++)
+        {
+          if ((rawkey == jankokeytbl2[c]) && (!epcolumn) && (!shiftpressed))
+          {
+            newnote = FIRSTNOTE+c+(epoctave+1)*12;
           }
         }
         break;
@@ -1072,7 +1120,7 @@ void patterncommands(void)
       mutechannel(rawkey - KEY_1);
     break;
   }
-  if ((keypreset != KEY_TRACKER) && (hexnybble >= 0) && (hexnybble <= 7) && (!epcolumn))
+  if ((keypreset == KEY_DMC) && (hexnybble >= 0) && (hexnybble <= 7) && (!epcolumn))
   {
     int oldbyte = pattern[epnum[epchn]][eppos*4];
     epoctave = hexnybble;
