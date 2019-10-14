@@ -1,4 +1,4 @@
-GoatTracker v2.72
+GoatTracker v2.75
 -----------------
 
 Editor by Lasse Öörni (loorni@gmail.com)
@@ -9,7 +9,9 @@ Uses 6510 crossassembler from Exomizer2 beta by Magnus Lind.
 Uses the SDL library.
 GoatTracker icon by Antonio Vera.
 Command quick reference by Simon Bennett.
-Patches by Stefan A. Haubenthal, Valerio Cannone, Raine M. Ekman & jclounge.
+Patches and further development by Stefan A. Haubenthal, Valerio Cannone, Raine M. Ekman,
+Tero Lindeman, Henrik Paulini and Groepaz.
+Microtonal support by Birgit Jauernig.
 
 Distributed under GNU General Public License
 (see the file COPYING for details)
@@ -36,6 +38,7 @@ Table of contents
 2.3.2 Pattern edit mode
 2.3.2.1 Protracker note-entry mode
 2.3.2.2 DMC note-entry mode
+2.3.2.3 Janko note-entry mode
 2.3.3 Song edit mode
 2.3.4 Instrument edit mode
 2.3.5 Table edit mode
@@ -61,7 +64,7 @@ Table of contents
 4.1 INS2SND2.EXE
 4.2 SNGSPLI2.EXE
 4.3 MOD2SNG.EXE
-4.4 BETACONV.EXE
+4.4 GT2RELOC.EXE
 
 5. Using the songs outside the editor
 5.1 Playroutine options
@@ -77,9 +80,11 @@ Table of contents
 6.2 GoatTracker v2 instrument (.INS) format
 6.3 Sound effect data format
 
-7. Recompiling
+7. Microtonal Tunings
 
-8. Version history
+8. Recompiling
+
+9. Version history
 
 
 1. General information
@@ -132,14 +137,15 @@ for Win32 platform.
    first step of instrument wavetable is unsupported and may result in missing
    notes.
 
-6. When using a playroutine with unbuffered SID-writes (Standard /w unbuffered
-   or Minimal) and encountering ADSR-bugs after packing/relocating, you can try
-   either:
+6. When using a playroutine with unbuffered SID-writes and encountering ADSR-
+   bugs after packing/relocating, you can try either:
    1) Set pulse-startpos to nonzero value in the troublesome instruments and
       change the 1stFrame Wave parameter of some instrument slightly, for
       example from $09 to $0B, to disable a playroutine optimization. The
       idea in this is to make the noteinit routine take more CPU cycles.
-   2) Use a playroutine with buffered writes to pack/relocate.
+   2) Use a playroutine with buffered writes to pack/relocate. You can try
+      the "standard" buffering first, and full buffering if that does not
+      help yet.
    3) Try hardrestart attack parameter $F for alternative SID register write
       order.
 
@@ -200,16 +206,18 @@ model 8580 and to load "dojo.sng" on startup.
 -Axx Set hard restart ADSR parameter in hex. DEFAULT=0F00
 -Bxx Set sound buffer length in milliseconds DEFAULT=100
 -Cxx Use CatWeasel MK3 PCI SID (0 = off, 1 = on)
--Dxx Pattern row display (0 = decimal, 1 = hexadecimal)
+-Dxx Pattern row display (0 = decimal, 1 = hex, 2 = decimal w/dots, 3 = hex w/dots)
 -Exx Set emulated SID model (0 = 6581 1 = 8580) DEFAULT=6581
 -Fxx Set custom SID clock cycles per second (0 = use PAL/NTSC default)
 -Gxx Set pitch of A-4 in Hz (0 = use default frequencytable, close to 440Hz)
 -Hxx Use HardSID (0 = off, 1 = HardSID ID0 2 = HardSID ID1 etc.)
 -Ixx Set reSID interpolation (0 = off, 1 = on, 2 = distortion, 3 = distortion & on) DEFAULT=off
+-Jxx Set special note names (2 chars for every note in an octave/cycle, e.g. C-DbD-EbE-F-GbG-AbA-BbB-)
 -Kxx Note-entry mode (0 = PROTRACKER 1 = DMC) DEFAULT=PROTRK.
 -Lxx SID memory location in hex. DEFAULT=D400
 -Mxx Set sound mixing rate DEFAULT=44100
 -Oxx Set pulse optimization/skipping (0 = off, 1 = on) DEFAULT=on
+-Qxx Set equal divisions per octave (12 = default, 8.2019143 = Bohlen-Pierce)
 -Rxx Set realtime command optimization/skipping (0 = off, 1 = on) DEFAULT=on
 -Sxx Set speed multiplier (0 for 25Hz, 1 for 1x, 2 for 2x etc.)
 -Txx Set HardSID interactive mode sound buffer length in milliseconds
@@ -218,6 +226,7 @@ model 8580 and to load "dojo.sng" on startup.
      DEFAULT=400, max.buffering=0
 -Vxx Set finevibrato conversion (0 = off, 1 = on) DEFAULT=on
 -Xxx Set window type (0 = window, 1 = fullscreen) DEFAULT=window
+-Yxx Path to a Scala tuning file .scl
 -Zxx Set random reSID write delay in cycles (0 = off) DEFAULT=off
 -N   Use NTSC timing
 -P   Use PAL timing (DEFAULT)
@@ -257,6 +266,9 @@ alternative playroutine, where waveform is written before ADSR. This can give
 more reliable note triggering, especially for very fast releases 0 & 1, but 
 may change the characteristics of the note's decay & release.
 
+The dotted pattern display modes (-D2 and -D3) display dots in the instrument
+and command column for zero instrument (no change) or zero command (no command.)
+
 2.2 Hardware support
 --------------------
 
@@ -266,7 +278,8 @@ drivers installed to use this feature.
 
 CatWeasel MK3 PCI SID support is available with -C option (-C1 to turn on).
 
-To use the PC64 cable, you need Daniel Illgen's HardSID-DLL-Clone. Available at
+To use the PC64 cable or a userport RS-232 interface, get the HardSID-DLL-Clone
+drivers from Daniel Illgen's page
 http://dawork.synchronus.de/
 
 To enable better support of multispeeds and cycle-exact timing on HardSID
@@ -322,6 +335,7 @@ SHIFT+F5  Decrease speed multiplier
 SHIFT+F6  Increase speed multiplier
 SHIFT+F7  Edit hardrestart ADSR parameter
 SHIFT+F8  Switch between 6581 and 8580 SID models
+SHIFT+F10 Merge-load song
 SHIFT+,.  Move song startposition on all channels and restart last playmode
 TAB       Cycle between editing modes (forwards)
 SHIFT+TAB Cycle between editing modes (backwards)
@@ -414,6 +428,23 @@ In this mode there are 3 different autoadvance-modes:
 
 GREEN - Advance when entering notes, octaves or command-databytes
 YELLOW - Advance when entering notes or command-databytes, not octaves
+RED - Do not advance automatically
+
+2.3.2.3 Janko note-entry mode
+----------------------------------
+
+Activated with command line option /K2. There are two rows of a piano keyboard:
+
+  Lower octave       Higher octave
+ S D F G H J K L    2 3 4 5 6 7 8 9 0
+Z X C V B N M , .  Q W E R T Y U I O P
+
+Octave (0-7) is selected with / and * keys on the numeric keypad.
+
+In this mode there are 2 different autoadvance-modes (the mode can be seen from
+the color of the jam/editmode indicator)
+
+GREEN - Advance when entering notes & command-databytes
 RED - Do not advance automatically
 
 2.3.3 Song edit mode
@@ -1170,18 +1201,35 @@ Usage: MOD2SNG <mod> <sng> [channel] [transpose]
        [channel] is the channel to leave out (1-4), default 4
        [transpose] is the halfstep transpose added to notes, default 0
 
-4.4 BETACONV.EXE
+4.4 GT2RELOC.EXE
 ----------------
 
-Converts GT v2 beta songs to new format used by GT v2 RC1 onwards. Old format
-had 47 instruments max. and new has 63 max. Additionally, depending on what
-beta version you used, you can choose to halve vibrato depths and pulse speeds
-to make them play correct in the current version. Warning: the conversion is
-irreversible, so have backups if you overwrite the old versions.
+This is a standalone version of the packer/relocator. It converts .sng files
+into .bin, .prg or .sid depending on outfiles extension.
 
-Usage: BETACONV <source> <destination> [vibdepth] [pulse]
-       [vibdepth] decides whether to halve vibdepth (1=yes 0=no), default 0
-       [pulse] decides whether to halve pulse speed (1=yes 0=no), default 0
+Usage: GT2RELOC <songname> <outfile> [options]
+
+Options:
+-Axx Set ADSR parameter for hardrestart in hex. DEFAULT=0F00
+-Bx  enable/disable buffered SID writes. DEFAULT=disabled
+-Cx  enable/disable zeropage ghost registers. DEFAULT=disabled
+-Dx  enable/disable sound effect support. DEFAULT=disabled
+-Ex  enable/disable volume change support. DEFAULT=disabled
+-Fxx Set custom SID clock cycles per second (0 = use PAL/NTSC default)
+-Gxx Set pitch of A-4 in Hz (0 = use default frequencytable, close to 440Hz)
+-Hx  enable/disable storing of author info. DEFAULT=disabled
+-Ix  enable/disable optimizations. DEFAULT=enabled
+-Jx  enable/disable full buffering. DEFAULT=disabled
+-Lxx SID memory location in hex. DEFAULT=D400
+-N   Use NTSC timing
+-Oxx Set pulseoptimization/skipping (0 = off, 1 = on) DEFAULT=on
+-P   Use PAL timing (DEFAULT)
+-Rxx Set realtime-effect optimization/skipping (0 = off, 1 = on) DEFAULT=on
+-Sxx Set speed multiplier (0 for 25Hz, 1 for 1x, 2 for 2x etc.) DEFAULT=1
+-Vxx Set finevibrato conversion (0 = off, 1 = on) DEFAULT=on
+-Wxx player memory location highbyte in hex. DEFAULT=1000
+-Zxx zeropage memory location in hex. DEFAULT=FC
+-?   Show options
 
 
 5. Using the songs outside the editor
@@ -1285,6 +1333,13 @@ what effects & commands the song uses, resulting in a smaller playroutine
 accordingly. If you encounter anomalies in the sound (such as ADSR bugs caused
 by unpredictable timing variation) you can try disabling the optimizations.
 Normally this is not necessary, but is included just in case.
+
+FULL BUFFERING - in some cases, especially with multispeeds, the "standard"
+or per-channel buffering is not enough and will still produce ADSR errors.
+This enables a functionality similar to the ZP ghost regs, where the previous
+frame's SID data is copied to the SID at the beginning of the play call for
+maximum stability. Will use more rastertime and imply the same problems with 
+sound effect playback as the ZP ghost regs, so use only when necessary.
 
 
 6. File/data formats description
@@ -1437,7 +1492,55 @@ The instrument's pulsewidth modulation & filter settings will be completely
 discarded.
 
 
-7. Recompiling
+7. Microtonal tunings
+---------------------
+
+Microtonal tunings can be applied by setting using the following options:
+
+/J sets special note names
+/Q sets equal division per octave
+/Y sets the path to a Scala file
+
+Setting special note names is important for scales/tunings with a number of
+notes in an octave/cycle that differs from 12. But it can also be used to show
+note names with flats instead of sharps.
+
+For each note, 2 chars have to be given, e.g. C-DbD-EbE-F-GbG-AbA-BbB- for note
+names that show flats instead of sharps. The number of notes can differ from 12
+and should match the number of notes used in an octave/cycle.
+
+Setting the equal division per octave is an easy way to apply tunings e.g. used
+by Easley Blackwood https://www.youtube.com/watch?v=HbuFPpiJL1o or for the
+Bohlen-Pierce tuning (Bohlen-Pierce has 8.2019143 notes per octave and 13 notes
+in a duodecime-cycle, so it also needs special note names).
+
+By loading a tuning from a Scala file, the /Q setting will not be used, and if
+the Scala file comes with note names inside, the -Jxx setting will not be used.
+Scala files have to follow the rules described in 
+http://www.huygens-fokker.org/scala/scl_format.html and note names can be
+applied by separating the name from the ratio value using whitespace. Example:
+
+! bohlen-p_et.scl
+!
+13-tone equal division of 3/1. Bohlen-Pierce equal approximation                
+ 13
+!
+ 146.30423    1-
+ 292.60846    2-
+ 438.91269    3-
+ 585.21692    4-
+ 731.52115    5-
+ 877.82539    6-
+ 1024.12962   7-
+ 1170.43385   8-
+ 1316.73808   9-
+ 1463.04231   A-
+ 1609.34654   B-
+ 1755.65077   C-
+ 3/1          0-
+
+
+8. Recompiling
 --------------
 
 To recompile for Win32, you need the MinGW development environment, use the
@@ -1452,7 +1555,7 @@ Compile first the utilities (datafile & dat2inc) from the src/bme directory,
 and place them to your path.
 
 
-8. Version history
+9. Version history
 ------------------
 
 v2.0Beta  - Original public release
@@ -1862,7 +1965,31 @@ v2.71     - Added keycode fix patch from Valerio Cannone.
           - Added fullscreen switch patch from Raine M. Ekman (see /X option)
           - Added context mode to online help patch from Raine M. Ekman.
           - Added /G command line option for setting A-4 pitch.
-          
+
 v2.72     - Fixed incorrect transpose range determination in the relocator.
           - Fixed crash in jam mode whan an illegal pattern command was executed
             from the wavetable.
+            
+v2.73     - Reverted to old playroutine timing.
+          - Added full buffering option (similar to ZP ghostregs) which will
+            buffer everything to ghost regs and dump the previous frame to the
+            SID at the beginning of the play call.
+          - Merge song functionality (SHIFT+F10.)
+          - Help text is written to console on non-Win32 platforms.
+          - gt2reloc utility by Groepaz.
+          
+v2.74     - Fixed track length not properly updated when swapping tracks.
+          - Fixed track length not properly updated if merge-load fails.
+          - Added dotted pattern display modes (-D2 and -D3.)
+
+v2.75     - Added /Q command line option for setting equal divisions per octave
+            that differ from 12.
+          - Added /J command line option for setting different note names.
+          - Added /Y command line option for setting a path to a Scala tuning
+            file.
+          - Added small color changes to the pattern table for better
+            readability.
+          - Added isomorphic key layout.
+          - Removed the BETACONV utility, as it references a very old songformat
+            and also saved in another old format.
+          - Added /w command line option for setting 4 different window sizes.
