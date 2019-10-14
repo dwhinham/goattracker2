@@ -26,6 +26,7 @@ extern int key, rawkey, shiftpressed, cursorflashdelay, altpressed;
 extern int mouseb, prevmouseb;
 extern int mouseheld;
 extern int mousex, mousey;
+extern unsigned bigwindow;
 #endif
 
 #endif

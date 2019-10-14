@@ -1,5 +1,5 @@
 
-#import <SDL/SDL.h>
+#import "SDL.h"
 #import "SDLMain.h"
 #import <sys/param.h> /* for MAXPATHLEN */
 #import <unistd.h>
@@ -82,30 +82,7 @@ static NSString *getApplicationName(void)
 - (NSEvent *)nextEventMatchingMask:(unsigned int)mask untilDate:(NSDate *)expiration inMode:(NSString *)mode dequeue:(BOOL)flag
 // ----------------------------------------------------------------------------
 {
-	NSEvent* event = [super nextEventMatchingMask:mask untilDate:expiration inMode:mode dequeue:flag];
-	
-	if (mode != NSDefaultRunLoopMode)
-		return event;
-	
-	NSWindow* window = [event window];
-	//if (window != nil)
-    //	NSLog(@"event window: %@\n", window);
-		
-	if ([event type] == NSKeyDown)
-	{
-		virtualkeycode = [event keyCode];
-		//NSLog(@"event key: %d for character: %@\n", [event keyCode], [event characters]);
-	}
-	else if ([event type] == NSKeyDown)
-		virtualkeycode = 0xff;
-		
-	if (window == nil || ([event modifierFlags] & NSCommandKeyMask) || ([window class] != [SDL_QuartzWindow class]))
-	{
-		[self sendEvent:event];
-		return nil;
-	}
-	else
-		return event;
+	return event;
 }
 
 @end
@@ -351,6 +328,7 @@ static NSString *getApplicationName(void)
 - (IBAction) alternateCommandAction:(id)sender
 // ----------------------------------------------------------------------------
 {
+	NSLog(@"alternateCommandAction: tag=%d", [sender tag]);
 	switch ([sender tag])
 	{
 		case 1:
@@ -619,7 +597,8 @@ int main(int argc, char **argv)
         gFinderLaunch = NO;
     }
 
-    [SDLApplication poseAsClass:[NSApplication class]];
+	// replaced event loop directly from Quartz (slaj)
+//    [SDLApplication poseAsClass:[NSApplication class]];
     NSApplicationMain(argc, (const char**) argv);
     return 0;
 }
