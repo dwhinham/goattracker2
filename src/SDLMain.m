@@ -82,6 +82,7 @@ static NSString *getApplicationName(void)
 - (NSEvent *)nextEventMatchingMask:(unsigned int)mask untilDate:(NSDate *)expiration inMode:(NSString *)mode dequeue:(BOOL)flag
 // ----------------------------------------------------------------------------
 {
+	NSEvent* event = [super nextEventMatchingMask:mask untilDate:expiration inMode:mode dequeue:flag];
 	return event;
 }
 
